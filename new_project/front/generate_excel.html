@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生信息Excel生成器</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .info {
+            background: #f8f9ff;
+            border: 1px solid #e1e5f2;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .info h3 {
+            margin-top: 0;
+            color: #667eea;
+        }
+
+        .data-preview {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e1e5f2;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th,
+        td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover {
+            background: #f8f9ff;
+        }
+
+        .error-row {
+            background: #fee !important;
+        }
+
+        .success-row {
+            background: #efe !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>📊 学生信息Excel生成器</h1>
+
+        <div class="info">
+            <h3>🎯 功能说明</h3>
+            <p>此工具可以生成用于演示前端批量导入功能的Excel文件：</p>
+            <ul>
+                <li><strong>标准模板</strong>：包含25名学生的完整信息，所有数据符合规范</li>
+                <li><strong>错误示例</strong>：包含10条记录，其中6条有错误，用于测试数据验证功能</li>
+            </ul>
+        </div>
+
+        <div class="button-group">
+            <button onclick="downloadStandardTemplate()">📝 下载标准模板</button>
+            <button onclick="downloadErrorTemplate()">⚠️ 下载错误示例</button>
+            <button onclick="showPreview('standard')">👀 预览标准数据</button>
+            <button onclick="showPreview('error')">🔍 预览错误数据</button>
+        </div>
+
+        <div id="dataPreview" class="data-preview" style="display: none;">
+            <table id="previewTable">
+                <thead>
+                    <tr>
+                        <th>学号</th>
+                        <th>姓名</th>
+                        <th>性别</th>
+                        <th>入学成绩</th>
+                        <th>学习风格</th>
+                        <th>特殊需求</th>
+                        <th>备注</th>
+                        <th>状态</th>
+                    </tr>
+                </thead>
+                <tbody id="previewBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // 标准学生数据
+        const standardData = [
+            ["学号", "姓名", "性别", "入学成绩", "学习风格", "特殊需求", "备注"],
+            ["2024001", "张三", "男", 85, "图像型", "无", "数学基础较好"],
+            ["2024002", "李小红", "女", 78, "解析型", "注意力不集中", "需要额外关注"],
+            ["2024003", "王明", "男", 92, "应用型", "无", "理解能力强"],
+            ["2024004", "陈美丽", "女", 67, "图像型", "学习困难", "需要个别辅导"],
+            ["2024005", "刘强", "男", 88, "解析型", "无", "逻辑思维能力强"],
+            ["2024006", "赵雪", "女", 72, "图像型", "视力问题", "需要坐前排"],
+            ["2024007", "孙浩", "男", 95, "应用型", "无", "数学竞赛获奖"],
+            ["2024008", "周婷婷", "女", 81, "解析型", "情绪调节困难", "需要心理关怀"],
+            ["2024009", "吴杰", "男", 76, "图像型", "无", "喜欢通过图表学习"],
+            ["2024010", "郑芳", "女", 89, "应用型", "无", "善于解决实际问题"],
+            ["2024011", "马小军", "男", 64, "图像型", "计算困难", "基础需要加强"],
+            ["2024012", "林静", "女", 83, "解析型", "无", "善于归纳总结"],
+            ["2024013", "黄勇", "男", 77, "应用型", "听力问题", "需要特殊座位安排"],
+            ["2024014", "许梅", "女", 90, "图像型", "无", "空间想象力强"],
+            ["2024015", "曹亮", "男", 86, "解析型", "无", "逻辑推理能力出色"],
+            ["2024016", "丁小华", "女", 70, "图像型", "家庭困难", "需要关注心理状态"],
+            ["2024017", "范伟", "男", 79, "应用型", "无", "动手能力强"],
+            ["2024018", "高玲", "女", 84, "解析型", "无", "善于分析和总结"],
+            ["2024019", "韩磊", "男", 73, "图像型", "注意力缺陷", "需要多次提醒"],
+            ["2024020", "江雨", "女", 87, "应用型", "无", "善于联系实际生活"],
+            ["2024021", "孔明", "男", 91, "解析型", "无", "数学思维清晰"],
+            ["2024022", "梁小燕", "女", 75, "图像型", "无", "视觉学习者"],
+            ["2024023", "宁强", "男", 82, "应用型", "轻微自闭", "需要耐心引导"],
+            ["2024024", "欧阳雪", "女", 88, "解析型", "无", "逻辑思维强"],
+            ["2024025", "潘杰", "男", 69, "图像型", "学习障碍", "需要特殊教学方法"]
+        ];
+
+        // 包含错误的数据
+        const errorData = [
+            ["学号", "姓名", "性别", "入学成绩", "学习风格", "特殊需求", "备注"],
+            ["2024026", "测试学生1", "男", 85, "图像型", "无", "正常数据"],
+            ["", "李错误", "女", 78, "解析型", "无", "学号为空"],
+            ["2024028", "王", "男", "abc", "图像型", "无", "成绩不是数字"],
+            ["2024029", "陈测试", "其他", 88, "图像型", "无", "性别错误"],
+            ["2024030", "刘同学", "女", 120, "错误风格", "无", "成绩超出范围且学习风格错误"],
+            ["2024031", "赵正常", "男", 75, "应用型", "无", "正常数据"],
+            ["2024032", "孙测试", "女", 45, "解析型", "无", "成绩过低"],
+            ["", "张无号", "男", 82, "图像型", "无", "学号缺失"],
+            ["2024034", "", "女", 78, "解析型", "无", "姓名为空"],
+            ["2024035", "李合格", "男", 88, "图像型", "无", "正常数据"]
+        ];
+
+        function downloadStandardTemplate() {
+            downloadExcel(standardData, '学生信息标准模板.xlsx');
+        }
+
+        function downloadErrorTemplate() {
+            downloadExcel(errorData, '学生信息错误示例.xlsx');
+        }
+
+        function downloadExcel(data, filename) {
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(data);
+
+            // 设置列宽
+            const colWidths = [
+                { wch: 12 }, // 学号
+                { wch: 10 }, // 姓名
+                { wch: 6 },  // 性别
+                { wch: 10 }, // 入学成绩
+                { wch: 10 }, // 学习风格
+                { wch: 15 }, // 特殊需求
+                { wch: 20 }  // 备注
+            ];
+            ws['!cols'] = colWidths;
+
+            // 设置表头样式
+            const headerStyle = {
+                font: { bold: true, color: { rgb: "FFFFFF" } },
+                fill: { fgColor: { rgb: "667eea" } },
+                alignment: { horizontal: "center" }
+            };
+
+            // 应用表头样式
+            const range = XLSX.utils.decode_range(ws['!ref']);
+            for (let col = range.s.c; col <= range.e.c; col++) {
+                const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
+                if (!ws[cellAddress]) continue;
+                ws[cellAddress].s = headerStyle;
+            }
+
+            XLSX.utils.book_append_sheet(wb, ws, "学生信息");
+            XLSX.writeFile(wb, filename);
+        }
+
+        function showPreview(type) {
+            const data = type === 'standard' ? standardData : errorData;
+            const preview = document.getElementById('dataPreview');
+            const tbody = document.getElementById('previewBody');
+
+            tbody.innerHTML = '';
+
+            // 跳过表头，从第二行开始
+            for (let i = 1; i < data.length; i++) {
+                const row = data[i];
+                const tr = document.createElement('tr');
+
+                // 检查是否有错误
+                const hasError = validateRow(row);
+                if (!hasError && type === 'error') {
+                    tr.className = 'error-row';
+                } else if (hasError && type === 'standard') {
+                    tr.className = 'success-row';
+                }
+
+                // 添加数据列
+                row.forEach(cell => {
+                    const td = document.createElement('td');
+                    td.textContent = cell || '(空)';
+                    tr.appendChild(td);
+                });
+
+                // 添加状态列
+                const statusTd = document.createElement('td');
+                statusTd.textContent = hasError ? '✅ 有效' : '❌ 错误';
+                statusTd.style.fontWeight = 'bold';
+                statusTd.style.color = hasError ? '#67C23A' : '#F56C6C';
+                tr.appendChild(statusTd);
+
+                tbody.appendChild(tr);
+            }
+
+            preview.style.display = 'block';
+        }
+
+        function validateRow(row) {
+            const [studentId, name, gender, score, learningStyle, specialNeeds, remark] = row;
+
+            // 检查必填字段
+            if (!studentId || !name) return false;
+
+            // 检查性别
+            if (!['男', '女'].includes(gender)) return false;
+
+            // 检查成绩
+            const scoreNum = parseInt(score);
+            if (isNaN(scoreNum) || scoreNum < 0 || scoreNum > 100) return false;
+
+            // 检查学习风格
+            if (!['图像型', '解析型', '应用型'].includes(learningStyle)) return false;
+
+            return true;
+        }
+    </script>
+</body>
+
+</html>

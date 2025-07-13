@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智慧教学平台 API 测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .api-section {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .api-section h2 {
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+        
+        .btn {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: #3182ce;
+            transform: translateY(-1px);
+        }
+        
+        .btn.success {
+            background: #48bb78;
+        }
+        
+        .btn.warning {
+            background: #ed8936;
+        }
+        
+        .btn.danger {
+            background: #f56565;
+        }
+        
+        .result {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .schedule-card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .schedule-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .schedule-card.upcoming {
+            border-left: 4px solid #f6ad55;
+            background: #fffaf0;
+        }
+        
+        .schedule-card.ongoing {
+            border-left: 4px solid #48bb78;
+            background: #f0fff4;
+        }
+        
+        .schedule-time {
+            font-weight: bold;
+            color: #4a5568;
+            font-size: 1.1em;
+        }
+        
+        .schedule-info h3 {
+            color: #2d3748;
+            margin: 8px 0;
+        }
+        
+        .schedule-meta {
+            color: #718096;
+            font-size: 0.9em;
+        }
+        
+        .schedule-meta span {
+            margin-right: 15px;
+        }
+        
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .todo-item {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .todo-item.priority-urgent {
+            border-left: 4px solid #f56565;
+            background: #fed7d7;
+        }
+        
+        .todo-item.priority-important {
+            border-left: 4px solid #ed8936;
+            background: #feebc8;
+        }
+        
+        .login-form {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .auth-status {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .auth-status.logged-in {
+            background: #c6f6d5;
+            color: #276749;
+        }
+        
+        .auth-status.logged-out {
+            background: #fed7d7;
+            color: #c53030;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>智慧教学平台 API 测试</h1>
+            <p>测试所有核心功能接口</p>
+        </div>
+        
+        <!-- 认证状态 -->
+        <div class="api-section">
+            <h2>🔐 用户认证</h2>
+            <div id="authStatus" class="auth-status logged-out">
+                未登录 - 请先登录以测试其他接口
+            </div>
+            
+            <div class="login-form">
+                <div class="form-group">
+                    <label>用户名:</label>
+                    <input type="text" id="username" placeholder="输入用户名" value="teacher1">
+                </div>
+                <div class="form-group">
+                    <label>密码:</label>
+                    <input type="password" id="password" placeholder="输入密码" value="123456">
+                </div>
+                <button class="btn" onclick="login()">登录</button>
+                <button class="btn warning" onclick="logout()">退出登录</button>
+                <button class="btn success" onclick="getCurrentUser()">获取当前用户</button>
+            </div>
+            
+            <div id="authResult" class="result" style="display: none;"></div>
+        </div>
+        
+        <!-- 今日教学日程 -->
+        <div class="api-section">
+            <h2>📅 今日教学日程</h2>
+            <button class="btn" onclick="getTodaySchedules()">获取今日课程安排</button>
+            <button class="btn" onclick="getWeekSchedules()">获取本周课程安排</button>
+            <button class="btn" onclick="getOngoingSchedules()">获取正在进行的课程</button>
+            <button class="btn" onclick="getUpcomingSchedules()">获取即将开始的课程</button>
+            <button class="btn warning" onclick="getSchedulesByDate()">获取指定日期课程</button>
+            
+            <div id="scheduleResult" class="result" style="display: none;"></div>
+            <div id="scheduleDisplay"></div>
+        </div>
+        
+        <!-- 学情分析 -->
+        <div class="api-section">
+            <h2>📊 学情分析</h2>
+            <button class="btn success" onclick="getAnalyticsOverview()">获取学情分析概览</button>
+            
+            <div id="analyticsResult" class="result" style="display: none;"></div>
+            <div id="analyticsDisplay"></div>
+        </div>
+        
+        <!-- 待办事项 -->
+        <div class="api-section">
+            <h2>✅ 待办事项</h2>
+            <button class="btn" onclick="getTodos()">获取待办列表</button>
+            <button class="btn success" onclick="createTestTodo()">创建测试待办</button>
+            
+            <div id="todoResult" class="result" style="display: none;"></div>
+            <div id="todoDisplay"></div>
+        </div>
+        
+        <!-- AI推荐 -->
+        <div class="api-section">
+            <h2>🤖 AI推荐</h2>
+            <button class="btn" onclick="getRecommendations()">获取个性化推荐</button>
+            
+            <div id="recommendationResult" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // API基础配置
+        const API_BASE = 'http://localhost:8080';
+        let authToken = localStorage.getItem('authToken');
+        
+        // 更新认证状态显示
+        function updateAuthStatus() {
+            const authStatus = document.getElementById('authStatus');
+            if (authToken) {
+                authStatus.className = 'auth-status logged-in';
+                authStatus.textContent = '已登录 - 可以测试所有接口';
+            } else {
+                authStatus.className = 'auth-status logged-out';
+                authStatus.textContent = '未登录 - 请先登录以测试其他接口';
+            }
+        }
+        
+        // 初始化页面
+        updateAuthStatus();
+        
+        // 通用API请求函数
+        async function apiRequest(endpoint, method = 'GET', data = null) {
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            };
+            
+            if (authToken) {
+                options.headers['Authorization'] = 'Bearer ' + authToken;
+            }
+            
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+            
+            try {
+                const response = await fetch(API_BASE + endpoint, options);
+                const result = await response.json();
+                return result;
+            } catch (error) {
+                console.error('API请求失败:', error);
+                return { code: 500, message: '网络请求失败: ' + error.message };
+            }
+        }
+        
+        // 显示结果
+        function showResult(elementId, data) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.textContent = JSON.stringify(data, null, 2);
+        }
+        
+        // === 认证相关 ===
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (!username || !password) {
+                alert('请输入用户名和密码');
+                return;
+            }
+            
+            const result = await apiRequest('/api/auth/login', 'POST', { username, password });
+            showResult('authResult', result);
+            
+            if (result.code === 200) {
+                authToken = result.data.token;
+                localStorage.setItem('authToken', authToken);
+                localStorage.setItem('user', JSON.stringify(result.data.user));
+                updateAuthStatus();
+                alert('登录成功！');
+            } else {
+                alert('登录失败: ' + result.message);
+            }
+        }
+        
+        function logout() {
+            authToken = null;
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+            updateAuthStatus();
+            document.getElementById('authResult').style.display = 'none';
+            alert('已退出登录');
+        }
+        
+        async function getCurrentUser() {
+            if (!authToken) {
+                alert('请先登录');
+                return;
+            }
+            
+            const result = await apiRequest('/api/auth/me');
+            showResult('authResult', result);
+        }
+        
+        // === 课程安排相关 ===
+        async function getTodaySchedules() {
+            if (!authToken) {
+                alert('请先登录');
+                return;
+            }
+            
+            const result = await apiRequest('/api/schedules/today');
+            showResult('scheduleResult', result);
+            
+            if (result.code === 200) {
+                displaySchedules(result.data);
+            }
+        }
+        
+        async function getWeekSchedules() {
+            if (!authToken) {
+                alert('请先登录');
+                return;
+            }
+            
+            const result = await apiRequest('/api/schedules/week');
+            showResult('scheduleResult', result);
+            
+            if (result.code === 200) {
+                displaySchedules(result.data);
+            }
+        }
+        
+        async function getOngoingSchedules() {
+            if (!authToken) {
+                alert('请先登录');
+                return;
+            }
+            
+            const result = await apiRequest('/api/schedules/ongoing');
+            showResult('scheduleResult', result);
+            
+            if (result.code === 200) {
+                displaySchedules(result.data);
+            }
+        }
+        
+        async function getUpcomingSchedules() {
+            if (!authToken) {
+                alert('请先登录');
+                return;
+            }
+            
+            const result = await apiRequest('/api/schedules/upcoming');
+            showResult('scheduleResult', result);
+            
+            if (result.code === 200) {
+                displaySchedules(result.data);
+            }
+        }
+        
+        async function getSchedulesByDate() {
+            if (!authToken) {
+                alert('请先登录');
+                return;
+            }
+            
+            const date = prompt('请输入日期 (格式: yyyy-MM-dd)', '2024-01-15');
+            if (!date) return;
+            
+            const result = await apiRequest(`/api/schedules/date/${date}`);
+            showResult('scheduleResult', result);
+            
+            if (result.code === 200) {
+                displaySchedules(result.data);
+            }
+        }
+        
+        function displaySchedules(schedules) {
+            const display = document.getElementById('scheduleDisplay');
+            
+            if (!schedules || schedules.length === 0) {
+                display.innerHTML = '<p>暂无课程安排</p>';
+                return;
+            }
+            
+            let html = '<h3>课程安排列表:</h3>';
+            schedules.forEach(schedule => {
+                const cardClass = schedule.isOngoing ? 'ongoing' : (schedule.isUpcoming ? 'upcoming' : '');
+                html += `
+                    <div class="schedule-card ${cardClass}">
+                        <div class="schedule-time">${schedule.timeRange}</div>
+                        <div class="schedule-info">
+                            <h3>${schedule.courseName} (${schedule.courseCode})</h3>
+                            <p>${schedule.lessonTopic}</p>
+                            <div class="schedule-meta">
+                                <span>班级: ${schedule.className}</span>
+                                <span>教室: ${schedule.classroom}</span>
+                                <span>状态: ${schedule.statusText}</span>
+                                <span>教师: ${schedule.teacherName}</span>
+                            </div>
+                        </div>
+                        <button class="btn" onclick="updateScheduleStatus(${schedule.id}, 'ONGOING')">开始上课</button>
+                        <button class="btn success" onclick="updateScheduleStatus(${schedule.id}, 'COMPLETED')">结束课程</button>
+                    </div>
+                `;
+            });
+            display.innerHTML = html;
+        }
+        
+        async function updateScheduleStatus(scheduleId, status) {
+            if (!authToken) {
+                alert('请先登录');
+                return;
+            }
+            
+            const result = await apiRequest(`/api/schedules/${scheduleId}/status?status=${status}`, 'PUT');
+            
+            if (result.code === 200) {
+                alert('状态更新成功！');
+                getTodaySchedules(); // 刷新列表
+            } else {
+                alert('状态更新失败: ' + result.message);
+            }
+        }
+        
+        // === 学情分析相关 ===
+        async function getAnalyticsOverview() {
+            if (!authToken) {
+                alert('请先登录');
+                return;
+            }
+            
+            const result = await apiRequest('/api/analytics/overview');
+            showResult('analyticsResult', result);
+            
+            if (result.code === 200) {
+                displayAnalytics(result.data);
+            }
+        }
+        
+        function displayAnalytics(analytics) {
+            const display = document.getElementById('analyticsDisplay');
+            
+            let html = `
+                <h3>学情分析概览:</h3>
+                <div class="metric-grid">
+                    <div class="metric-card">
+                        <h4>知识掌握率</h4>
+                        <div class="metric-value">${analytics.knowledgeMasteryRate || 0}%</div>
+                    </div>
+                    <div class="metric-card">
+                        <h4>作业完成率</h4>
+                        <div class="metric-value">${analytics.assignmentCompletionRate || 0}%</div>
+                    </div>
+                    <div class="metric-card">
+                        <h4>课堂参与度</h4>
+                        <div class="metric-value">${analytics.classParticipationRate || 0}%</div>
+                    </div>
+                    <div class="metric-card">
+                        <h4>平均成绩</h4>
+                        <div class="metric-value">${analytics.averageScore || 0}</div>
+                    </div>
+                </div>
+            `;
+            
+            if (analytics.todayData) {
+                html += `
+                    <h4>今日数据:</h4>
+                    <p>出勤人数: ${analytics.todayData.todayAttendance || 0}</p>
+                    <p>作业提交: ${analytics.todayData.todayAssignmentSubmissions || 0}</p>
+                    <p>活跃学习者: ${analytics.todayData.activeLearners || 0}</p>
+                `;
+            }
+            
+            display.innerHTML = html;
+        }
+        
+        // === 待办事项相关 ===
+        async function getTodos() {
+            if (!authToken) {
+                alert('请先登录');
+                return;
+            }
+            
+            const result = await apiRequest('/api/todos');
+            showResult('todoResult', result);
+            
+            if (result.code === 200) {
+                displayTodos(result.data);
+            }
+        }
+        
+        async function createTestTodo() {
+            if (!authToken) {
+                alert('请先登录');
+                return;
+            }
+            
+            const todoData = {
+                title: '测试待办事项 - ' + new Date().toLocaleString(),
+                description: '这是一个通过API测试页面创建的待办事项',
+                priority: 'NORMAL',
+                category: '测试',
+                dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ')
+            };
+            
+            const result = await apiRequest('/api/todos', 'POST', todoData);
+            showResult('todoResult', result);
+            
+            if (result.code === 200) {
+                alert('测试待办事项创建成功！');
+                getTodos(); // 刷新列表
+            } else {
+                alert('创建失败: ' + result.message);
+            }
+        }
+        
+        function displayTodos(todos) {
+            const display = document.getElementById('todoDisplay');
+            
+            if (!todos || todos.length === 0) {
+                display.innerHTML = '<p>暂无待办事项</p>';
+                return;
+            }
+            
+            let html = '<h3>待办事项列表:</h3>';
+            todos.forEach(todo => {
+                html += `
+                    <div class="todo-item priority-${todo.priority.toLowerCase()}">
+                        <div>
+                            <h4>${todo.title}</h4>
+                            <p>${todo.description}</p>
+                            <small>分类: ${todo.category} | 优先级: ${todo.priority} | 状态: ${todo.status}</small>
+                        </div>
+                        <button class="btn success" onclick="completeTodo(${todo.id})">完成</button>
+                    </div>
+                `;
+            });
+            display.innerHTML = html;
+        }
+        
+        async function completeTodo(todoId) {
+            if (!authToken) {
+                alert('请先登录');
+                return;
+            }
+            
+            const result = await apiRequest(`/api/todos/${todoId}`, 'PUT', { status: 'COMPLETED' });
+            
+            if (result.code === 200) {
+                alert('待办事项已完成！');
+                getTodos(); // 刷新列表
+            } else {
+                alert('操作失败: ' + result.message);
+            }
+        }
+        
+        // === AI推荐相关 ===
+        async function getRecommendations() {
+            if (!authToken) {
+                alert('请先登录');
+                return;
+            }
+            
+            const result = await apiRequest('/api/recommendations');
+            showResult('recommendationResult', result);
+        }
+    </script>
+</body>
+</html> 
